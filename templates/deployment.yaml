@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+  labels:
+    app: {{ template "matchbox.fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+  name: {{ template "matchbox.fullname" . }}
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: {{ template "matchbox.fullname" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "matchbox.fullname" . }}
+    spec:
+      containers:
+        - image: {{ .Values.image }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          name: matchbox
+          env:
+            - name: MATCHBOX_ADDRESS
+              value: "0.0.0.0:8080"
+            - name: MATCHBOX_RPC_ADDRESS
+              value: "0.0.0.0:8081"
+            - name: MATCHBOX_LOG_LEVEL
+              value: "debug"
+            - name: MATCHBOX_DATA_PATH
+              value: /var/lib/matchbox/data
+            - name: MATCHBOX_ASSETS_PATH
+              value: /var/lib/matchbox/assets
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: https
+              containerPort: 8081
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "50Mi"
+          volumeMounts:
+            - name: server-certs
+              mountPath: /etc/matchbox
+              readOnly: true
+            - name: data
+              mountPath: /var/lib/matchbox/data
+            - name: assets
+              mountPath: /var/lib/matchbox/assets
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: server-certs
+          secret:
+            {{- if .Values.certificate.enabled  }}
+            secretName: {{ template "matchbox.fullname" . }}-tls
+            # map cert-manager secrete keys to matchbox default expected files
+            items:
+              - key: ca.crt
+                path: ca.crt
+              - key: tls.crt
+                path: server.crt
+              - key: tls.key
+                path: server.key
+            {{- end }}
+        - name: client-certs
+          secret:
+            {{- if .Values.certificate.enabled  }}
+            secretName: {{ template "matchbox.fullname" . }}-tls
+            # map cert-manager secrete keys to matchbox default expected files
+            items:
+              - key: ca.crt
+                path: ca.crt
+              - key: tls.crt
+                path: server.crt
+              - key: tls.key
+                path: server.key
+            {{- end }}
+        - name: data
+          {{- if .Values.data.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.data.persistence.existingClaim | default (printf "%s-%s" (include "matchbox.fullname" .) "data") }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        - name: assets
+          {{- if .Values.assets.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.assets.persistence.existingClaim | default (printf "%s-%s" (include "matchbox.fullname" .) "assets") }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+status: {}

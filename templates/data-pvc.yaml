@@ -1,0 +1,29 @@
+{{- if and .Values.data.persistence.enabled (not .Values.data.persistence.existingClaim) -}}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+{{- if .Values.data.persistence.annotations }}
+  annotations:
+{{ toYaml .Values.data.persistence.annotations | indent 4 }}
+{{- end }}
+  annotations:
+  labels:
+    app: {{ template "matchbox.fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+  name: "{{ template "matchbox.fullname" . }}-data"
+spec:
+  accessModes:
+    - {{ .Values.data.persistence.accessMode | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.data.persistence.size | quote }}
+{{- if .Values.data.persistence.storageClass }}
+{{- if (eq "-" .Values.data.persistence.storageClass) }}
+  storageClassName: ""
+{{- else }}
+  storageClassName: "{{ .Values.data.persistence.storageClass }}"
+{{- end }}
+{{- end }}
+{{- end }}

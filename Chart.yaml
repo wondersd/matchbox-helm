@@ -1,0 +1,10 @@
+name: matchbox
+deprecated: false
+version: 0.1.0
+appVersion: 0.8.3
+description: Matchbox Server
+keywords:
+- matchbox
+home: https://matchbox.psdn.io/
+sources:
+- https://github.com/poseidon/matchbox

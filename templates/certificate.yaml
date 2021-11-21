@@ -1,0 +1,31 @@
+{{- if .Values.certificate.enabled  }}
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  annotations:
+  labels:
+    app: {{ template "matchbox.fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+  name: {{ template "matchbox.fullname" . }}
+spec:
+  # Secret names are always required.
+  secretName: {{ template "matchbox.fullname" . }}-tls
+  duration: {{ .Values.certificate.duration }}
+  renewBefore: {{ .Values.certificate.renewBefore }}
+  organization: {{ .Values.certificate.organization }}
+  isCA: false
+  keySize: 2048
+  keyAlgorithm: rsa
+  keyEncoding: pkcs1
+  usages:
+    - server auth
+  dnsNames: {{ .Values.certificate.dnsNames }}
+  uriSANs: {{ .Values.certificate.uriSANs }}
+  ipAddresses: {{ .Values.certificate.ipAddresses }}
+  # Issuer references are always required.
+  issuerRef:
+    name: {{ .Values.certificate.issuerRef.name }}
+    kind: {{ .Values.certificate.issuerRef.kind }}
+{{- end }}
