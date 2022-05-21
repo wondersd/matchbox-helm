@@ -1,7 +1,7 @@
 {{- if and .Values.assets.persistence.enabled (not .Values.assets.persistence.existingClaim) -}}
 kind: PersistentVolumeClaim
 apiVersion: v1
-metaassets:
+metadata:
 {{- if .Values.assets.persistence.annotations }}
   annotations:
 {{ toYaml .Values.assets.persistence.annotations | indent 4 }}
