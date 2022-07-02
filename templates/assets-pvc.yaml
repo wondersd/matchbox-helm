@@ -2,11 +2,8 @@
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-{{- if .Values.assets.persistence.annotations }}
   annotations:
-{{ toYaml .Values.assets.persistence.annotations | indent 4 }}
-{{- end }}
-  annotations:
+    {{ toYaml .Values.assets.persistence.annotations | nindent 4 }}
   labels:
     app: {{ template "matchbox.fullname" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"

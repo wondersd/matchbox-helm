@@ -1,43 +1,43 @@
 apiVersion: v1
 kind: Service
 metadata:
+  name: {{ template "matchbox.fullname" . }}
   annotations:
   labels:
     app: {{ template "matchbox.fullname" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
-  name: {{ template "matchbox.fullname" . }}
 spec:
-{{- if (or (eq .Values.matchbox.serviceType "ClusterIP") (empty .Values.matchbox.serviceType)) }}
+{{- if (or (eq .Values.service.serviceType "ClusterIP") (empty .Values.service.serviceType)) }}
   type: ClusterIP
-{{- else if eq .Values.matchbox.serviceType "LoadBalancer" }}
-  type: {{ .Values.matchbox.serviceType }}
-  {{- if .Values.matchbox.loadBalancerIP }}
-  loadBalancerIP: {{ .Values.matchbox.loadBalancerIP }}
+{{- else if eq .Values.service.serviceType "LoadBalancer" }}
+  type: {{ .Values.service.serviceType }}
+  {{- if .Values.service.loadBalancerIP }}
+  loadBalancerIP: {{ .Values.service.loadBalancerIP }}
   {{- end }}
-  {{- if .Values.matchbox.loadBalancerSourceRanges }}
+  {{- if .Values.service.loadBalancerSourceRanges }}
   loadBalancerSourceRanges:
-{{ toYaml .Values.matchbox.loadBalancerSourceRanges | indent 4 }}
+{{ toYaml .Values.service.loadBalancerSourceRanges | indent 4 }}
   {{- end -}}
 {{- else }}
-  type: {{ .Values.matchbox.serviceType }}
+  type: {{ .Values.service.serviceType }}
 {{- end }}
-  {{- if .Values.matchbox.externalTrafficPolicy }}
-  externalTrafficPolicy: {{ .Values.matchbox.externalTrafficPolicy }}
+  {{- if .Values.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.service.externalTrafficPolicy }}
   {{- end }}
   ports:
   - name: "http"
     port: 8080
     targetPort: 8080
-    {{- if (and (eq .Values.matchbox.serviceType "NodePort") (not (empty .Values.matchbox.nodePort))) }}
-    nodePort: {{ .Values.matchbox.nodePort }}
+    {{- if (and (eq .Values.service.serviceType "NodePort") (not (empty .Values.service.nodePort))) }}
+    nodePort: {{ .Values.service.nodePort }}
     {{- end }}
   - name: "https"
     port: 8081
     targetPort: 8081
-    {{- if (and (eq .Values.matchbox.serviceType "NodePort") (not (empty .Values.matchbox.nodePort))) }}
-    nodePort: {{ .Values.matchbox.nodePort }}
+    {{- if (and (eq .Values.service.serviceType "NodePort") (not (empty .Values.service.nodePort))) }}
+    nodePort: {{ .Values.service.nodePort }}
     {{- end }}
   selector:
     app: {{ template "matchbox.fullname" . }}

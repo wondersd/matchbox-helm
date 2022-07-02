@@ -1,7 +1,7 @@
 image: quay.io/poseidon/matchbox:v0.8.3
 imagePullPolicy: IfNotPresent
 
-matchbox:
+service:
   serviceType: ClusterIP
   loadBalancerIP:
 
@@ -9,14 +9,27 @@ ingress:
   enabled: false
 
 certificate:
+  enabled: false
   duration: 2160h # 90d
   renewBefore: 360h # 15d
-  issuerRef: {}
+  dnsNames:
+    - '{{ template "matchbox.fullname" . }}'
+  issuerRef:
+    name: '{{ template "matchbox.fullname" . }}'
+    kind: Issuer
+
+issuer:
+  enabled: false
 
 data:
   persistence:
-    enabled: true
+    enabled: false
+  volume:
+    emptyDir: {}
 
 assets:
   persistence:
-    enabled: true
+    enabled: false
+    annotations: {}
+  volume:
+    emptyDir: {}

@@ -88,13 +88,13 @@ spec:
           persistentVolumeClaim:
             claimName: {{ .Values.data.persistence.existingClaim | default (printf "%s-%s" (include "matchbox.fullname" .) "data") }}
           {{- else }}
-          emptyDir: {}
+          {{- toYaml .Values.data.volume | nindent 10 }}
           {{- end }}
         - name: assets
           {{- if .Values.assets.persistence.enabled }}
           persistentVolumeClaim:
             claimName: {{ .Values.assets.persistence.existingClaim | default (printf "%s-%s" (include "matchbox.fullname" .) "assets") }}
           {{- else }}
-          emptyDir: {}
+          {{- toYaml .Values.assets.volume | nindent 10 }}
           {{- end }}
 status: {}

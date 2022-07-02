@@ -4,11 +4,11 @@ kind: Certificate
 metadata:
   annotations:
   labels:
-    app: {{ template "matchbox.fullname" . }}
+    app: "{{ template "matchbox.fullname" . }}"
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
-  name: {{ template "matchbox.fullname" . }}
+  name: "{{ template "matchbox.fullname" . }}"
 spec:
   # Secret names are always required.
   secretName: {{ template "matchbox.fullname" . }}-tls
@@ -21,11 +21,13 @@ spec:
   keyEncoding: pkcs1
   usages:
     - server auth
-  dnsNames: {{ .Values.certificate.dnsNames }}
+  dnsNames:
+    {{- tpl (toYaml .Values.certificate.dnsNames) . | nindent 4 }}
   uriSANs: {{ .Values.certificate.uriSANs }}
-  ipAddresses: {{ .Values.certificate.ipAddresses }}
+  ipAddresses:
+    {{- toYaml .Values.certificate.ipAddresses | nindent 4 }}
   # Issuer references are always required.
   issuerRef:
-    name: {{ .Values.certificate.issuerRef.name }}
-    kind: {{ .Values.certificate.issuerRef.kind }}
+    name: {{ tpl .Values.certificate.issuerRef.name . }}
+    kind: {{ tpl .Values.certificate.issuerRef.kind . }}
 {{- end }}
