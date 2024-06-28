@@ -1,5 +1,5 @@
 {{- if .Values.certificate.enabled  }}
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   annotations:
@@ -8,7 +8,7 @@ metadata:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
-  name: "{{ template "matchbox.fullname" . }}"
+  name: '{{ template "matchbox.fullname" . }}'
 spec:
   # Secret names are always required.
   secretName: {{ template "matchbox.fullname" . }}-tls
@@ -16,9 +16,10 @@ spec:
   renewBefore: {{ .Values.certificate.renewBefore }}
   organization: {{ .Values.certificate.organization }}
   isCA: false
-  keySize: 2048
-  keyAlgorithm: rsa
-  keyEncoding: pkcs1
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
   usages:
     - server auth
   dnsNames:

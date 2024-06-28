@@ -18,8 +18,8 @@ spec:
   {{- end }}
   {{- if .Values.service.loadBalancerSourceRanges }}
   loadBalancerSourceRanges:
-{{ toYaml .Values.service.loadBalancerSourceRanges | indent 4 }}
-  {{- end -}}
+    {{- toYaml .Values.service.loadBalancerSourceRanges | nindent 4 }}
+  {{- end }}
 {{- else }}
   type: {{ .Values.service.serviceType }}
 {{- end }}
@@ -28,13 +28,13 @@ spec:
   {{- end }}
   ports:
   - name: "http"
-    port: 8080
+    port: {{ .Values.service.http.port }}
     targetPort: 8080
     {{- if (and (eq .Values.service.serviceType "NodePort") (not (empty .Values.service.nodePort))) }}
     nodePort: {{ .Values.service.nodePort }}
     {{- end }}
   - name: "https"
-    port: 8081
+    port: {{ .Values.service.https.port }}
     targetPort: 8081
     {{- if (and (eq .Values.service.serviceType "NodePort") (not (empty .Values.service.nodePort))) }}
     nodePort: {{ .Values.service.nodePort }}

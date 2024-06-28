@@ -1,0 +1,20 @@
+{{- if .Values.ingress.http.certificate.enabled }}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  annotations:
+    {{- toYaml .Values.ingress.http.certificate.annotations | nindent 4 }}
+  labels:
+    app: {{ template "matchbox.fullname" . }}
+  name: {{ include "matchbox.fullname" . }}
+spec:
+  dnsNames:
+    {{- toYaml .Values.ingress.http.certificate.dnsNames | nindent 4 }}
+  issuerRef:
+    {{- toYaml .Values.ingress.http.certificate.issuerRef | nindent 4 }}
+  secretName: {{ include "matchbox.fullname" . }}-tls-secret
+  usages:
+  - digital signature
+  - key encipherment
+{{- end }}

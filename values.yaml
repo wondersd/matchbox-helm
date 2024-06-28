@@ -4,9 +4,31 @@ imagePullPolicy: IfNotPresent
 service:
   serviceType: ClusterIP
   loadBalancerIP:
+  http:
+    port: 8080
+  https:
+    port: 8081
+  loadBalancerSourceRanges: []
 
 ingress:
-  enabled: false
+  http:
+    enabled: false
+    path: /
+    tls:
+      enabled: false
+    certificate:
+      enabled: false
+      annotations: {}
+      issuerRef: {}
+  https:
+    enabled: false
+    path: /
+    tls:
+      enabled: false
+    certificate:
+      enabled: false
+      annotations: {}
+      issuerRef: {}
 
 certificate:
   enabled: false

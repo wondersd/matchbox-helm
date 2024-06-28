@@ -1,0 +1,72 @@
+{{- if .Values.ingress.https.enabled -}}
+{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1" }}
+apiVersion: networking.k8s.io/v1
+{{ else }}
+apiVersion: extensions/v1beta1
+{{ end -}}
+kind: Ingress
+metadata:
+  name: {{ include "matchbox.fullname" . }}-https
+  labels:
+    {{- if .Values.ingress.https.labels }}
+    {{- toYaml .Values.ingress.https.labels | nindent 4 }}
+    {{- end }}
+  {{- if .Values.ingress.https.annotations }}
+  annotations:
+    {{- range $key, $value := .Values.ingress.https.annotations }}
+    {{ $key }}: {{ tpl $value $ | quote }}
+    {{- end }}
+  {{- end }}
+spec:
+  {{- if .Values.ingress.https.ingressClassName }}
+  ingressClassName:  {{ .Values.ingress.https.ingressClassName }}
+  {{- end }}
+  {{- if or .Values.ingress.https.tls.enabled }}
+  tls:
+    - hosts:
+        {{- toYaml .Values.ingress.https.tls.hosts | nindent 8 }}
+      secretName: {{ include "matchbox.fullname" . }}-https-tls-secret
+  {{- end }}
+  rules:
+  {{- if .Values.ingress.https.hosts  }}
+  {{- range .Values.ingress.https.hosts }}
+    - host: {{ . }}
+      http:
+        paths:
+          {{ if $.Values.ingress.https.extraPaths }}
+          {{- toYaml $.Values.ingress.https.extraPaths | nindent 10 }}
+          {{- end }}
+          - path: /
+            {{- if (semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion) }}
+            pathType: Prefix
+            {{- end }}
+            backend:
+              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
+              service:
+                name: {{ include "matchbox.fullname" $ }}
+                port:
+                  number: {{ $.Values.service.https.port }}
+              {{- else }}
+              serviceName: {{ include "matchbox.fullname" $ }}
+              servicePort: {{ $.Values.service.https.port }}
+              {{- end }}
+  {{- end }}
+  {{- else }}
+    - http:
+        paths:
+          - path: /
+            {{- if (semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion) }}
+            pathType: Prefix
+            {{- end }}
+            backend:
+              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
+              service:
+                name: {{ include "matchbox.fullname" $ }}
+                port:
+                  number: {{ $.Values.service.https.port }}
+              {{- else }}
+              serviceName: {{ include "matchbox.fullname" $ }}
+              servicePort: {{ $.Values.service.https.port }}
+              {{- end }}
+  {{- end -}}
+{{- end }}
