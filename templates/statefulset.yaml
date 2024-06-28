@@ -1,0 +1,117 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ template "matchbox.fullname" . }}
+  annotations:
+    {{-  tpl (toYaml .Values.annotations) . | nindent 4 }}
+  labels:
+    {{-  tpl (toYaml .Values.labels) . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      {{-  tpl (toYaml .Values.selectorLabels) . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{-  tpl (toYaml .Values.labels) . | nindent 8 }}
+    spec:
+      containers:
+        - image: {{ .Values.image }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          name: matchbox
+          env:
+            - secretRef:
+              name: {{ template "matchbox.fullname" . }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.httpPort }}
+            - name: rpc
+              containerPort: {{ .Values.rpcPort }}
+          resources:
+            {{-  toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: server-certs
+              mountPath: /etc/matchbox
+              readOnly: true
+            - name: data
+              mountPath: {{ .Values.env.MATCHBOX_DATA_PATH }}
+            - name: assets
+              mountPath: {{ .Values.env.MATCHBOX_ASSETS_PATH }}
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: server-certs
+          secret:
+            {{- if .Values.certificate.enabled  }}
+            secretName: {{ template "matchbox.fullname" . }}-tls
+            # map cert-manager secrete keys to matchbox default expected files
+            items:
+              - key: ca.crt
+                path: ca.crt
+              - key: tls.crt
+                path: server.crt
+              - key: tls.key
+                path: server.key
+            {{- end }}
+        - name: client-certs
+          secret:
+            {{- if .Values.certificate.enabled  }}
+            secretName: {{ template "matchbox.fullname" . }}-tls
+            # map cert-manager secrete keys to matchbox default expected files
+            items:
+              - key: ca.crt
+                path: ca.crt
+              - key: tls.crt
+                path: server.crt
+              - key: tls.key
+                path: server.key
+            {{- end }}
+        {{- if not .Values.data.persistence.enabled }}
+        - name: data
+          {{-  toYaml .Values.data.volume | nindent 10 }}
+        {{- end }}
+        {{- if not .Values.assets.persistence.enabled }}
+        - name: assets
+          {{-  toYaml .Values.assets.volume | nindent 10 }}
+        {{- end }}
+    volumeClaimTemplates:
+      {{- if .Values.data.persistence.enabled }}
+      - metadata:
+          name: data
+          {{- with .Values.data.persistence.annotations }}
+          annotations:
+            {{- . | toYaml | nindent 10 }}
+          {{- end }}
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          {{- with .Values.data.persistence.storageClass }}
+          storageClassName: {{ if (eq "-" .) }}""{{ else }}{{ . }}{{ end }}
+          {{- end }}
+          resources:
+            requests:
+              storage: {{ .Values.data.persistence.size | quote }}
+      {{- end }}
+      {{- if .Values.assets.persistence.enabled }}
+      - metadata:
+          name: assets
+          {{- with .Values.assets.persistence.annotations }}
+          annotations:
+            {{- . | toYaml | nindent 10 }}
+          {{- end }}
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          {{- with .Values.assets.persistence.storageClass }}
+          storageClassName: {{ if (eq "-" .) }}""{{ else }}{{ . }}{{ end }}
+          {{- end }}
+          resources:
+            requests:
+              storage: {{ .Values.assets.persistence.size | quote }}
+      {{- end }}

@@ -1,6 +1,33 @@
 image: quay.io/poseidon/matchbox:v0.8.3
 imagePullPolicy: IfNotPresent
 
+
+annotations: {}
+
+labels:
+  chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  release: "{{ .Release.Name }}"
+  heritage: "{{ .Release.Service }}"
+  app: '{{ template "matchbox.fullname" . }}'
+
+selectorLabels:
+  app: '{{ template "matchbox.fullname" . }}'
+
+httpPort: 8080
+rpcPort: 8081
+
+env:
+  MATCHBOX_ADDRESS: "0.0.0.0:{{ .Values.httpPort }}"
+  MATCHBOX_RPC_ADDRESS: "0.0.0.0:{{ .Values.rpcPort }}"
+  MATCHBOX_LOG_LEVEL: "debug"
+  MATCHBOX_DATA_PATH: /var/lib/matchbox/data
+  MATCHBOX_ASSETS_PATH: /var/lib/matchbox/assets
+
+resources:
+  requests:
+    cpu: "50m"
+    memory: "50Mi"
+
 service:
   serviceType: ClusterIP
   loadBalancerIP:
