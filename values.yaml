@@ -73,6 +73,8 @@ issuer:
 data:
   persistence:
     enabled: false
+    accessModes:
+      - "ReadWriteOnce"
   volume:
     emptyDir: {}
 
@@ -80,5 +82,7 @@ assets:
   persistence:
     enabled: false
     annotations: {}
+    accessModes:
+      - "ReadWriteOnce"
   volume:
     emptyDir: {}

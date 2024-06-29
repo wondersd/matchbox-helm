@@ -3,6 +3,7 @@ kind: Service
 metadata:
   name: {{ template "matchbox.fullname" . }}
   annotations:
+    {{-  tpl (toYaml .Values.service.annotations) . | nindent 4 }}
   labels:
     app: {{ template "matchbox.fullname" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"

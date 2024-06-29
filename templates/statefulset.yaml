@@ -24,9 +24,9 @@ spec:
         - image: {{ .Values.image }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
           name: matchbox
-          env:
+          envFrom:
             - secretRef:
-              name: {{ template "matchbox.fullname" . }}
+                name: {{ template "matchbox.fullname" . }}
           ports:
             - name: http
               containerPort: {{ .Values.httpPort }}
@@ -80,38 +80,38 @@ spec:
         - name: assets
           {{-  toYaml .Values.assets.volume | nindent 10 }}
         {{- end }}
-    volumeClaimTemplates:
-      {{- if .Values.data.persistence.enabled }}
-      - metadata:
-          name: data
-          {{- with .Values.data.persistence.annotations }}
-          annotations:
-            {{- . | toYaml | nindent 10 }}
-          {{- end }}
-        spec:
-          accessModes:
-            - ReadWriteOnce
-          {{- with .Values.data.persistence.storageClass }}
-          storageClassName: {{ if (eq "-" .) }}""{{ else }}{{ . }}{{ end }}
-          {{- end }}
-          resources:
-            requests:
-              storage: {{ .Values.data.persistence.size | quote }}
-      {{- end }}
-      {{- if .Values.assets.persistence.enabled }}
-      - metadata:
-          name: assets
-          {{- with .Values.assets.persistence.annotations }}
-          annotations:
-            {{- . | toYaml | nindent 10 }}
-          {{- end }}
-        spec:
-          accessModes:
-            - ReadWriteOnce
-          {{- with .Values.assets.persistence.storageClass }}
-          storageClassName: {{ if (eq "-" .) }}""{{ else }}{{ . }}{{ end }}
-          {{- end }}
-          resources:
-            requests:
-              storage: {{ .Values.assets.persistence.size | quote }}
-      {{- end }}
+  volumeClaimTemplates:
+    {{- if .Values.data.persistence.enabled }}
+    - metadata:
+        name: data
+        {{- with .Values.data.persistence.annotations }}
+        annotations:
+          {{- . | toYaml | nindent 10 }}
+        {{- end }}
+      spec:
+        accessModes:
+          {{-  toYaml .Values.data.persistence.accessModes | nindent 8 }}
+        {{- with .Values.data.persistence.storageClass }}
+        storageClassName: {{ if (eq "-" .) }}""{{ else }}{{ . }}{{ end }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.data.persistence.size | quote }}
+    {{- end }}
+    {{- if .Values.assets.persistence.enabled }}
+    - metadata:
+        name: assets
+        {{- with .Values.assets.persistence.annotations }}
+        annotations:
+          {{- . | toYaml | nindent 10 }}
+        {{- end }}
+      spec:
+        accessModes:
+          {{-  toYaml .Values.assets.persistence.accessModes | nindent 8 }}
+        {{- with .Values.assets.persistence.storageClass }}
+        storageClassName: {{ if (eq "-" .) }}""{{ else }}{{ . }}{{ end }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.assets.persistence.size | quote }}
+    {{- end }}
