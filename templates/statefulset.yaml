@@ -20,6 +20,8 @@ spec:
       labels:
         {{-  tpl (toYaml .Values.labels) . | nindent 8 }}
     spec:
+      affinity:
+        {{- toYaml .Values.affinity | nindent 8 }}
       containers:
         - image: {{ .Values.image }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}

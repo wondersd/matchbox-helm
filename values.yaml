@@ -86,3 +86,41 @@ assets:
       - "ReadWriteOnce"
   volume:
     emptyDir: {}
+
+proxydhcp:
+  enabled: false
+  image: quay.io/poseidon/dnsmasq:v0.5.0-36-g23d6729
+  imagePullPolicy: IfNotPresent
+
+  annotations: {}
+
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+    app: '{{ template "proxydhcp.fullname" . }}'
+
+  selectorLabels:
+    app: '{{ template "proxydhcp.fullname" . }}'
+
+  tftpPort: 69
+  dhcpPort: 67
+  dhcpClientPort: 68
+
+
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "50Mi"
+
+  assets:
+    persistence:
+      enabled: false
+
+  data:
+    persistence:
+      enabled: false
+      accessModes:
+        - "ReadWriteOnce"
+    volume:
+      emptyDir: {}
